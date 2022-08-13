@@ -19,14 +19,23 @@ const Counter = sequelize.define("Counter", {
     defaultValue: 1,
   },
 });
-
+// 定义数据模型
+const Chatid = sequelize.define("Chatid", {
+  count: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 1,
+  },
+});
 // 数据库初始化方法
 async function init() {
   await Counter.sync({ alter: true });
+  await Chatid.sync({ alter: true });
 }
 
 // 导出初始化方法和模型
 module.exports = {
   init,
   Counter,
+  Chatid
 };
