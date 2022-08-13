@@ -79,7 +79,7 @@ app.post("/api/message", async (req, res) => {
       let json={
         ToUserName: req.body.ToUserName,
         FromUserName: req.body.FromUserName,
-        CreateTime: Date.now(),
+        CreateTime: req.body.CreateTime,
         MsgType: "text",
         Content: reply,
       };
