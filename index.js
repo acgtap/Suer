@@ -67,6 +67,7 @@ app.post("/api/message", async (req, res) => {
       res.send("success");
       return;
     }
+    const { ToUserName, FromUserName, MsgType, Content, CreateTime } = req.body
     if (req.body.MsgType == "text") {
       let reply = await ciku({
         ToUserName: req.body.ToUserName,
@@ -77,8 +78,8 @@ app.post("/api/message", async (req, res) => {
         MsgId: req.body.MsgId, 
       });
       let json={
-        ToUserName: req.body.ToUserName,
-        FromUserName: req.body.FromUserName,
+        ToUserName: req.body.FromUserName,
+        FromUserName: req.body.ToUserName,
         CreateTime: req.body.CreateTime,
         MsgType: "text",
         Content: reply,
