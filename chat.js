@@ -244,6 +244,7 @@ async function iceAI_word({
   let config = {};
 
   if ((await mysqld.isHaveChatIdIn(fromQQ)) == true) {
+      console.log("没有chatid，获取新id")
     config = await mysqld.getChatId(fromQQ);
   } else {
     config = await newChatId(fromQQ);

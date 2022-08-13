@@ -68,15 +68,23 @@ app.post("/api/message", async (req, res) => {
       return;
     }
     if (req.body.MsgType == "text") {
-      let reply = await ciku(req.body);
-
-      res.send({
+      let reply = await ciku({
+        ToUserName: req.body.ToUserName,
+        FromUserName: req.body.FromUserName, 
+        CreateTime: req.body.CreateTime, 
+        MsgType: "text", 
+        Content: req.body.Content, 
+        MsgId: req.body.MsgId, 
+      });
+      let json={
         ToUserName: req.body.ToUserName,
         FromUserName: req.body.FromUserName,
         CreateTime: Date.now(),
         MsgType: "text",
         Content: reply,
-      });
+      };
+      console.log("消息回复", json);
+      res.send(json);
       return;
     } else {
       res.send("success");
