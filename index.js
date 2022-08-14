@@ -83,7 +83,7 @@ app.post("/api/message", async (req, res) => {
       res.send("success");
       return;
     }
-    const { ToUserName, FromUserName, MsgType, Content, CreateTime } = req.body;
+    const { ToUserName, FromUserName, MsgType, Content, CreateTime,MsgId } = req.body;
     if (req.body.MsgType == "text") {
       const appid = req.headers['x-wx-from-appid'] || ''
       if(servant.lock==true) {
