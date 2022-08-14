@@ -55,7 +55,8 @@ async function MoreIce(FromUserName,text,appid) {
         response.statusCode == "400"
       ) {
         console.log("Need auth"+response.statusCode+":" + response.body);
-        console.log((await getNewCookie(FromUserName,text,appid)));
+        let reply=await getNewCookie(FromUserName,text,appid);
+        resolve(reply);
         // iceAI_word(text, fromQQ, bot, "", 1, 1, log, Message);
         // log.warn("转交给iceAI")
         return;
@@ -220,7 +221,7 @@ function getNewCookie(
         '","Metadata":{}}}',
     };
     request(options, async function (error, response) {
-      if (error) throw new Error(error);
+      if (error) reject(error.toString());
       console.log(response.body);
       if (
         response.body == "Access denied. Context missing." ||
@@ -236,15 +237,10 @@ function getNewCookie(
             Content: text,
             MsgId: '',
           });
-          await sendmess(appid, {
-            touser: FromUserName,
-            msgtype: 'text',
-            text: {
-              content: reply
-            }
-          })
           console.log("finially,转交给iceAI");
         console.log("疑似cookie失效");
+         resolve(reject);
+          
         return;
       }
       let result = JSON.parse(response.body);
@@ -309,11 +305,9 @@ async function _servant({
 let reply = await MoreIce('',Content,'')
   return reply;
   }
+    // console.log("o:"+_servant({
+    //     Content:"哈哈哈"
+    //   }))
 
-//  console.log( _servant({
-//     Content:"做个我吃"
-//   }))
-//   console.log(_servant({
-//     Content:"哈哈哈"
-//   }))
+  
   module.exports =_servant;
