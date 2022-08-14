@@ -1,6 +1,6 @@
 let sendmess=require('./sendmess')
 let scookie = '';//cookie
-let url=''
+let surl=''
 /*
 @descript 更nb的ai
 */
@@ -45,7 +45,7 @@ async function MoreIce(FromUserName,text,appid) {
         text +
         '","Metadata":{}}}',
     };
-    request(options, function (error, response) {
+    request(options, async function (error, response) {
       if (error) throw new Error(error);
       if (
         response.body == "Access denied. Context missing." ||
