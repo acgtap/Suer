@@ -2,11 +2,11 @@ var mysql = require("mysql");
 
 
   mysqls = mysql.createConnection({
-      host: "139.155.182.167",
-      user: "bot",
-      password: "senxia123",
-      port: "33090",
-      database: "bot",
+      host: "10.15.101.251",
+      user: "root",
+      password: "3KMysKKu",
+      port: "3306",
+      database: "nodejs_demo",
     });
   mysqls.connect();
   function addChatId(fromQQ, config) {
