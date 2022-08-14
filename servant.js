@@ -58,7 +58,7 @@ async function MoreIce(FromUserName,text,appid) {
         return;
       }
       if (response.statusCode != 200) {
-        log.error("requestCode:" + response.statusCode);
+        console.log("requestCode:" + response.statusCode);
         await sendmess(appid, {
             touser: FromUserName,
             msgtype: 'text',
