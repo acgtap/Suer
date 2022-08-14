@@ -102,9 +102,9 @@ app.post("/api/message", async (req, res) => {
              )
              
             res.send({
-              ToUserName: req.body.FromUserName,
-              FromUserName: req.body.ToUserName,
-              CreateTime: req.body.CreateTime,
+              ToUserName: FromUserName,
+              FromUserName: ToUserName,
+              CreateTime: CreateTime,
               MsgType: "image",
               Image: {
                 MediaId: body.media_id
