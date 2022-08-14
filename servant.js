@@ -238,8 +238,8 @@ function getNewCookie(
             MsgId: '',
           });
           console.log("finially,转交给iceAI");
-        console.log("疑似cookie失效");
-         resolve(reject);
+          console.log("疑似cookie失效");
+         resolve(reply);
           
         return;
       }
