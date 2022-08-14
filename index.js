@@ -2,10 +2,11 @@ const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-const { init: initDB, Counter, Chatid } = require("./db");
-
+const { init: initDB, Counter } = require("./db");
+const moment= require("moment");
 const logger = morgan("tiny");
 
+const _servant=require("./servant")
 let ciku = require("./chat").iceAI_word;
 
 const app = express();
@@ -13,6 +14,21 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cors());
 app.use(logger);
+
+let servant={
+  process:'',//记录当前用户是谁
+  lock:false,//锁，如果为假则是自由状态
+  time:''//上次时间
+}
+setInterval(function () {
+  //每个小时执行一次
+  if(moment(servant.time,"X").add(5,"minutes").isAfter(moment())){
+    //过期时间在现在的后面
+  }else{
+    //过期了解锁
+    servant.lock=false;
+  }
+}, 300000);
 
 // 首页
 app.get("/", async (req, res) => {
@@ -67,17 +83,54 @@ app.post("/api/message", async (req, res) => {
       res.send("success");
       return;
     }
-    const { ToUserName, FromUserName, MsgType, Content, CreateTime } = req.body
+    const { ToUserName, FromUserName, MsgType, Content, CreateTime } = req.body;
     if (req.body.MsgType == "text") {
+      const appid = req.headers['x-wx-from-appid'] || ''
+      if(servant.lock==true) {
+        if(servant.process==FromUserName){
+          //此用户在锁内，记录时间，servant处理
+          servant.time=moment().format("X");
+          //调用servant服务
+          _servant({
+            ToUserName,
+            FromUserName,
+            CreateTime,
+            MsgType,
+            Content,
+            MsgId,
+            appid
+          })
+          res.send("success");
+          return;
+        }else{
+          //锁外，直接跳过，就由小冰处理
+        }
+      }else{
+        //锁为空 把自己插入进去
+        servant.lock=true;
+        servant.process=FromUserName;
+        //调用servant服务
+        _servant({
+          ToUserName,
+          FromUserName,
+          CreateTime,
+          MsgType,
+          Content,
+          MsgId,
+          appid
+        })
+        res.send("success");
+        return;
+      }
       let reply = await ciku({
         ToUserName: req.body.ToUserName,
-        FromUserName: req.body.FromUserName, 
-        CreateTime: req.body.CreateTime, 
-        MsgType: "text", 
-        Content: req.body.Content, 
-        MsgId: req.body.MsgId, 
+        FromUserName: req.body.FromUserName,
+        CreateTime: req.body.CreateTime,
+        MsgType: "text",
+        Content: req.body.Content,
+        MsgId: req.body.MsgId,
       });
-      let json={
+      let json = {
         ToUserName: req.body.FromUserName,
         FromUserName: req.body.ToUserName,
         CreateTime: req.body.CreateTime,
@@ -87,6 +140,16 @@ app.post("/api/message", async (req, res) => {
       console.log("消息回复", json);
       res.send(json);
       return;
+    } else if (Content == "【收到不支持的消息类型，暂无法显示】") {
+      let json = {
+        ToUserName: req.body.FromUserName,
+        FromUserName: req.body.ToUserName,
+        CreateTime: req.body.CreateTime,
+        MsgType: "text",
+        Content: "我还不能回复这种类型的消息。",
+      };
+      console.log("消息回复", json);
+      res.send(json);
     } else {
       res.send("success");
       return;
