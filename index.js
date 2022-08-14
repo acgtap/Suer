@@ -5,8 +5,10 @@ const morgan = require("morgan");
 const { init: initDB, Counter } = require("./db");
 const moment= require("moment");
 const logger = morgan("tiny");
-
+const fs= require('fs');
 const _servant=require("./servant")
+let upload=require('./upload')
+let sendmess=require('./sendmess')
 let ciku = require("./chat").iceAI_word;
 
 const app = express();
@@ -85,6 +87,25 @@ app.post("/api/message", async (req, res) => {
     }
     const { ToUserName, FromUserName, MsgType, Content, CreateTime,MsgId } = req.body;
     if (req.body.MsgType == "text") {
+      if(Content=="随机图片"){
+            let filename = moment().format("X")+".png"
+            let file_path='public/'+filename;
+            fs.writeFileSync(file_path, await download("https://www.dmoe.cc/random.php"));
+            let body=await upload({
+                    file:{
+                        name: filename,
+                        path: file_path
+                    }
+                }
+             )
+            await sendmess(appid, {
+                touser: FromUserName,
+                msgtype: 'image',
+                image: {
+                  media_id: body.media_id
+                }
+              })
+      }
       const appid = req.headers['x-wx-from-appid'] || ''
       if(servant.lock==true) {
         if(servant.process==FromUserName){

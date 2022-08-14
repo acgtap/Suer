@@ -1,5 +1,7 @@
 let sendmess=require('./sendmess')
 let scookie = '';//cookie
+let download=require('download')
+let upload=require('./upload')
 let surl=''
 /*
 @descript 更nb的ai
@@ -79,6 +81,24 @@ async function MoreIce(FromUserName,text,appid) {
             //   friend: fromQQ,
             //   message: new Message().addImageUrl(r.Content.ImageUrl),
             // });
+            let filename = moment().format("X")+".png"
+            let file_path='public/'+filename;
+            fs.writeFileSync(file_path, await download(r.Content.ImageUrl));
+            let body=await upload({
+                    file:{
+                        name: filename,
+                        path: file_path
+                    }
+                }
+             )
+             await sendmess(appid, {
+                touser: FromUserName,
+                msgtype: 'image',
+                image: {
+                  media_id: body.media_id
+                }
+              })
+
           }
         } else {
             await sendmess(appid, {
@@ -221,7 +241,23 @@ async function MoreIce(FromUserName,text,appid) {
             //   friend: fromQQ,
             //   message: new Message().addImageUrl(r.Content.ImageUrl),
             // });
-            
+            let filename = moment().format("X")+".png"
+            let file_path='public/'+filename;
+            fs.writeFileSync(file_path, await download(r.Content.ImageUrl));
+            let body=await upload({
+                    file:{
+                        name: filename,
+                        path: file_path
+                    }
+                }
+             )
+             await sendmess(appid, {
+                touser: FromUserName,
+                msgtype: 'image',
+                image: {
+                  media_id: body.media_id
+                }
+              })
           }
         } else {
         //   bot.sendMessage({
