@@ -9,7 +9,7 @@ const fs= require('fs');
 const _servant=require("./servant")
 let upload=require('./upload')
 let download=require('download')
-let sendmess=require('./sendmess')
+// let sendmess=require('./sendmess')
 let ciku = require("./chat").iceAI_word;
 
 const app = express();
@@ -23,15 +23,34 @@ let servant={
   lock:false,//锁，如果为假则是自由状态
   time:''//上次时间
 }
+
 setInterval(function () {
   //每个小时执行一次
   if(moment(servant.time,"X").add(5,"minutes").isAfter(moment())){
+    console.log('没过期:'+servant)
     //过期时间在现在的后面
   }else{
     //过期了解锁
+    console.log('过期了'+servant)
     servant.lock=false;
   }
 }, 300000);
+
+
+function randomNum(minNum,maxNum){ 
+  switch(arguments.length){ 
+      case 1: 
+          return parseInt(Math.random()*minNum+1,10); 
+      break; 
+      case 2: 
+          return parseInt(Math.random()*(maxNum-minNum+1)+minNum,10); 
+      break; 
+          default: 
+              return 0; 
+          break; 
+  } 
+} 
+
 
 // 首页
 app.get("/", async (req, res) => {
@@ -119,6 +138,41 @@ app.post("/api/message", async (req, res) => {
             //     }
             //   })
       }
+
+
+      if(Content=="头像盲盒"){
+        let filename = randomNum(1,40)+".jpg"
+        let file_path='public/touxiang/'+filename;
+        //fs.writeFileSync(file_path, );
+        let body=await upload({
+                file:{
+                    name: filename,
+                    path: file_path
+                }
+            },
+            fs.readFileSync(file_path)
+         )
+         
+        res.send({
+          ToUserName: FromUserName,
+          FromUserName: ToUserName,
+          CreateTime: CreateTime,
+          MsgType: "image",
+          Image: {
+            MediaId: body.media_id
+          }
+        });
+        return;
+        // await sendmess(appid, {
+        //     touser: FromUserName,
+        //     msgtype: 'image',
+        //     image: {
+        //       media_id: body.media_id
+        //     }
+        //   })
+  }
+
+
       const appid = req.headers['x-wx-from-appid'] || ''
       if(servant.lock==true) {
         if(servant.process==FromUserName){
@@ -145,7 +199,6 @@ app.post("/api/message", async (req, res) => {
         //锁为空 把自己插入进去
         servant.lock=true;
         servant.process=FromUserName;
-        //调用servant服务
         //调用servant服务
         let reply= await _servant({
           Content
