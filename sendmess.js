@@ -1,3 +1,4 @@
+let request=require('request')
 function sendmess (appid, mess) {
     return new Promise((resolve, reject) => {
       request({

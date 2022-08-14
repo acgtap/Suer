@@ -2,6 +2,7 @@ let sendmess=require('./sendmess')
 let scookie = '';//cookie
 let download=require('download')
 let upload=require('./upload')
+let request=require('request')
 let surl=''
 /*
 @descript 更nb的ai

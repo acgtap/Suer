@@ -8,6 +8,7 @@ const logger = morgan("tiny");
 const fs= require('fs');
 const _servant=require("./servant")
 let upload=require('./upload')
+let download=require('download')
 let sendmess=require('./sendmess')
 let ciku = require("./chat").iceAI_word;
 
