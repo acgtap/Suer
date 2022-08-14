@@ -2,7 +2,7 @@ const request = require('request');
 const path = require('path');
 const fs= require('fs');
 const moment= require('moment');
-async function getMediaid(files){
+async function getMediaid(files,content){
         /**
          *上传本地
          */
@@ -28,7 +28,7 @@ async function getMediaid(files){
                 headers : { 'Content-Type' : 'multipart/form-data' },
                 formData: {
                     media: {
-                        value: fs.readFileSync(file_path),
+                        value: content,
                         options: {
                             filename: '1.png',
                             'content-type': 'image/png',

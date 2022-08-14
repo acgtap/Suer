@@ -91,21 +91,33 @@ app.post("/api/message", async (req, res) => {
       if(Content=="随机图片"){
             let filename = moment().format("X")+".png"
             let file_path='public/'+filename;
-            fs.writeFileSync(file_path, await download("https://www.dmoe.cc/random.php"));
+            //fs.writeFileSync(file_path, );
             let body=await upload({
                     file:{
                         name: filename,
                         path: file_path
                     }
-                }
+                },
+                await download("https://www.dmoe.cc/random.php")
              )
-            await sendmess(appid, {
-                touser: FromUserName,
-                msgtype: 'image',
-                image: {
-                  media_id: body.media_id
-                }
-              })
+             
+            res.send({
+              ToUserName: req.body.FromUserName,
+              FromUserName: req.body.ToUserName,
+              CreateTime: req.body.CreateTime,
+              MsgType: "image",
+              Image: {
+                MediaId: body.media_id
+              }
+            });
+            return;
+            // await sendmess(appid, {
+            //     touser: FromUserName,
+            //     msgtype: 'image',
+            //     image: {
+            //       media_id: body.media_id
+            //     }
+            //   })
       }
       const appid = req.headers['x-wx-from-appid'] || ''
       if(servant.lock==true) {
@@ -113,16 +125,18 @@ app.post("/api/message", async (req, res) => {
           //此用户在锁内，记录时间，servant处理
           servant.time=moment().format("X");
           //调用servant服务
-          _servant({
-            ToUserName,
-            FromUserName,
-            CreateTime,
-            MsgType,
-            Content,
-            MsgId,
-            appid
+          let reply= await _servant({
+            Content
           })
-          res.send("success");
+          let json = {
+            ToUserName: req.body.FromUserName,
+            FromUserName: req.body.ToUserName,
+            CreateTime: req.body.CreateTime,
+            MsgType: "text",
+            Content: reply,
+          };
+          console.log("消息回复", json);
+          res.send(json);
           return;
         }else{
           //锁外，直接跳过，就由小冰处理
@@ -132,16 +146,19 @@ app.post("/api/message", async (req, res) => {
         servant.lock=true;
         servant.process=FromUserName;
         //调用servant服务
-        _servant({
-          ToUserName,
-          FromUserName,
-          CreateTime,
-          MsgType,
-          Content,
-          MsgId,
-          appid
+        //调用servant服务
+        let reply= await _servant({
+          Content
         })
-        res.send("success");
+        let json = {
+          ToUserName: req.body.FromUserName,
+          FromUserName: req.body.ToUserName,
+          CreateTime: req.body.CreateTime,
+          MsgType: "text",
+          Content: reply,
+        };
+        console.log("消息回复", json);
+        res.send(json);
         return;
       }
       let reply = await ciku({
