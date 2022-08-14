@@ -1,7 +1,6 @@
 var mysql = require("mysql");
 
-
-  mysqls = mysql.createConnection({
+let mysqls = mysql.createConnection({
       host: "10.15.101.251",
       user: "root",
       password: "3KMysKKu",
