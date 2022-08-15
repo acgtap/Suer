@@ -3,12 +3,12 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const { init: initDB, Counter } = require("./db");
-const moment= require("moment");
+const moment = require("moment");
 const logger = morgan("tiny");
-const fs= require('fs');
-const _servant=require("./servant")
-let upload=require('./upload')
-let download=require('download')
+const fs = require("fs");
+const _servant = require("./servant");
+let upload = require("./upload");
+let download = require("download");
 // let sendmess=require('./sendmess')
 let ciku = require("./chat").iceAI_word;
 
@@ -18,39 +18,40 @@ app.use(express.json());
 app.use(cors());
 app.use(logger);
 
-let servant={
-  process:'',//记录当前用户是谁
-  lock:false,//锁，如果为假则是自由状态
-  time:''//上次时间
-}
+let servant = {
+  process: "", //记录当前用户是谁
+  lock: false, //锁，如果为假则是自由状态
+  time: "", //上次时间
+};
 
 setInterval(function () {
   //每个小时执行一次
-  if(moment(servant.time,"X").add(5,"minutes").isAfter(moment())){
-    console.log('没过期:'+servant)
+  if (moment(servant.time, "X").add(5, "minutes").isAfter(moment())) {
+    console.log("没过期:" + servant);
     //过期时间在现在的后面
-  }else{
+  } else {
     //过期了解锁
-    console.log('过期了'+servant)
-    servant.lock=false;
+    console.log("过期了" + servant);
+    servant.lock = false;
   }
 }, 300000);
 
-
-function randomNum(minNum,maxNum){ 
-  switch(arguments.length){ 
-      case 1: 
-          return parseInt(Math.random()*minNum+1,10); 
-      break; 
-      case 2: 
-          return parseInt(Math.random()*(maxNum-minNum+1)+minNum,10); 
-      break; 
-          default: 
-              return 0; 
-          break; 
-  } 
-} 
-
+function randomNum(minNum, maxNum) {
+  switch (arguments.length) {
+    case 1:
+      return parseInt(Math.random() * minNum + 1, 10);
+      break;
+    case 2:
+      return parseInt(Math.random() * (maxNum - minNum + 1) + minNum, 10);
+      break;
+    default:
+      return 0;
+      break;
+  }
+}
+function randomArray(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
 // 首页
 app.get("/", async (req, res) => {
@@ -105,62 +106,43 @@ app.post("/api/message", async (req, res) => {
       res.send("success");
       return;
     }
-    const { ToUserName, FromUserName, MsgType, Content, CreateTime,MsgId } = req.body;
+    const { ToUserName, FromUserName, MsgType, Content, CreateTime, MsgId } =
+      req.body;
     if (req.body.MsgType == "text") {
-      if(Content=="随机图片"){
-            let filename = moment().format("X")+".png"
-            let file_path='public/'+filename;
-            //fs.writeFileSync(file_path, );
-            let body=await upload({
-                    file:{
-                        name: filename,
-                        path: file_path
-                    }
-                },
-                await download("https://www.dmoe.cc/random.php")
-             )
-             
-            res.send({
-              ToUserName: FromUserName,
-              FromUserName: ToUserName,
-              CreateTime: CreateTime,
-              MsgType: "image",
-              Image: {
-                MediaId: body.media_id
-              }
-            });
-            return;
-            // await sendmess(appid, {
-            //     touser: FromUserName,
-            //     msgtype: 'image',
-            //     image: {
-            //       media_id: body.media_id
-            //     }
-            //   })
+      if (Content == "【收到不支持的消息类型，暂无法显示】") {
+        let json = {
+          ToUserName: req.body.FromUserName,
+          FromUserName: req.body.ToUserName,
+          CreateTime: req.body.CreateTime,
+          MsgType: "text",
+          Content: "我还不能回复这种类型的消息。",
+        };
+        console.log("消息回复", json);
+        res.send(json);
+        return;
       }
-
-
-      if(Content=="头像盲盒"){
-        let filename = randomNum(1,40)+".jpg"
-        let file_path='public/touxiang/'+filename;
+      if (Content == "随机图片") {
+        let filename = moment().format("X") + ".png";
+        let file_path = "public/" + filename;
         //fs.writeFileSync(file_path, );
-        let body=await upload({
-                file:{
-                    name: filename,
-                    path: file_path
-                }
+        let body = await upload(
+          {
+            file: {
+              name: filename,
+              path: file_path,
             },
-            fs.readFileSync(file_path)
-         )
-         
+          },
+          await download("https://www.dmoe.cc/random.php")
+        );
+
         res.send({
           ToUserName: FromUserName,
           FromUserName: ToUserName,
           CreateTime: CreateTime,
           MsgType: "image",
           Image: {
-            MediaId: body.media_id
-          }
+            MediaId: body.media_id,
+          },
         });
         return;
         // await sendmess(appid, {
@@ -170,18 +152,115 @@ app.post("/api/message", async (req, res) => {
         //       media_id: body.media_id
         //     }
         //   })
-  }
+      }
+      if (Content.indexOf("头像盲盒") != -1) {
+        let basepath = "";
+        if (Content.indexOf("女生") != -1) {
+          basepath = "public/touxiang/";
+        } else if (Content.indexOf("男生") != -1) {
+          basepath = "public/touxiangBoy/";
+        } else if (Content.indexOf("动漫") != -1) {
+          basepath = "public/touxiangDman/";
+        } else {
+          basepath = "public/touxiang/";
+        }
 
+        const files = fs.readdirSync(basepath);
+        let filename = randomArray(files);
+        let file_path = basepath + filename;
+        let body = await upload(
+          {
+            file: {
+              name: filename,
+              path: file_path,
+            },
+          },
+          fs.readFileSync(file_path)
+        );
 
-      const appid = req.headers['x-wx-from-appid'] || ''
-      if(servant.lock==true) {
-        if(servant.process==FromUserName){
+        res.send({
+          ToUserName: FromUserName,
+          FromUserName: ToUserName,
+          CreateTime: CreateTime,
+          MsgType: "image",
+          Image: {
+            MediaId: body.media_id,
+          },
+        });
+        return;
+        // await sendmess(appid, {
+        //     touser: FromUserName,
+        //     msgtype: 'image',
+        //     image: {
+        //       media_id: body.media_id
+        //     }
+        //   })
+      }
+      if (
+        Content.indexOf("背景盲盒") != -1 ||
+        Content.indexOf("壁纸盲盒") != -1 ||
+        Content.indexOf("表情盲盒") != -1
+      ) {
+        let basepath = "";
+        if (
+          Content.indexOf("背景盲盒") != -1 ||
+          Content.indexOf("壁纸盲盒") != -1
+        ) {
+          basepath = "public/background/";
+        } else if (Content.indexOf("表情包盲盒") != -1) {
+          basepath = "public/biaoqingbao/";
+        } else {
+          basepath = "public/biaoqingbao/";
+        }
+
+        const files = fs.readdirSync(basepath);
+        let filename = randomArray(files);
+        let file_path = basepath + filename;
+        // files object contains all files names
+        // log them on console
+        // files.forEach(file => {
+        //     console.log(file);
+        // });
+
+        //fs.writeFileSync(file_path, );
+        let body = await upload(
+          {
+            file: {
+              name: filename,
+              path: file_path,
+            },
+          },
+          fs.readFileSync(file_path)
+        );
+
+        res.send({
+          ToUserName: FromUserName,
+          FromUserName: ToUserName,
+          CreateTime: CreateTime,
+          MsgType: "image",
+          Image: {
+            MediaId: body.media_id,
+          },
+        });
+        return;
+        // await sendmess(appid, {
+        //     touser: FromUserName,
+        //     msgtype: 'image',
+        //     image: {
+        //       media_id: body.media_id
+        //     }
+        //   })
+      }
+
+      const appid = req.headers["x-wx-from-appid"] || "";
+      if (servant.lock == true) {
+        if (servant.process == FromUserName) {
           //此用户在锁内，记录时间，servant处理
-          servant.time=moment().format("X");
+          servant.time = moment().format("X");
           //调用servant服务
-          let reply= await _servant({
-            Content
-          })
+          let reply = await _servant({
+            Content,
+          });
           let json = {
             ToUserName: req.body.FromUserName,
             FromUserName: req.body.ToUserName,
@@ -192,17 +271,17 @@ app.post("/api/message", async (req, res) => {
           console.log("消息回复", json);
           res.send(json);
           return;
-        }else{
+        } else {
           //锁外，直接跳过，就由小冰处理
         }
-      }else{
+      } else {
         //锁为空 把自己插入进去
-        servant.lock=true;
-        servant.process=FromUserName;
+        servant.lock = true;
+        servant.process = FromUserName;
         //调用servant服务
-        let reply= await _servant({
-          Content
-        })
+        let reply = await _servant({
+          Content,
+        });
         let json = {
           ToUserName: req.body.FromUserName,
           FromUserName: req.body.ToUserName,
