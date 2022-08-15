@@ -162,7 +162,8 @@ app.post("/api/message", async (req, res) => {
         } else if (Content.indexOf("动漫") != -1) {
           basepath = "public/touxiangDman/";
         } else {
-          basepath = "public/touxiang/";
+          let dir = randomArray(["touxiang", "touxiangBoy", "touxiangDman"]);
+          basepath = "public/" + dir + "/";
         }
 
         const files = fs.readdirSync(basepath);

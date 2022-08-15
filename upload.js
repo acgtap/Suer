@@ -30,8 +30,8 @@ async function getMediaid(files,content){
                     media: {
                         value: content,
                         options: {
-                            filename: '1.png',
-                            'content-type': 'image/png',
+                            filename: file.name,
+                            'content-type': 'image/'+file.name.split('.')[1],
                         }
                     }
                 }
